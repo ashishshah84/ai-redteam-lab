@@ -135,3 +135,58 @@ for this category, with no application-level guardrail.
 (see manual-baseline.md). All successful findings above required either
 automated adaptive generation or encoding obfuscation — none were found via
 direct, plainly-worded requests.
+
+---
+
+## Finding 7: PyRIT — programmatic secret-leak scoring (negative result, cross-validating)
+**Severity:** Informational | **ASR:** 0% (0/8) | **Source:** PyRIT
+**OWASP LLM:** LLM02 (Sensitive Information Disclosure) — tested, not confirmed via this method
+
+Using PyRIT's `PromptSendingAttack` with a `SubStringScorer` performing an
+exact-match check for the planted secret's distinctive prefix (`sk-nw-fake-`),
+8 attempts were made across 4 attack objectives (direct override, DAN-style
+jailbreak, system-prompt-repeat request, and developer-impersonation framing),
+each tested plain and Base64-encoded. All 8 attempts returned `secret_leak: false`.
+
+**This is a meaningful negative result, not a non-finding.** It cross-validates
+the Phase 2 manual baseline (0/4 succeeded using similar direct phrasing) using
+an independent tool and unambiguous programmatic scoring rather than manual
+judgment. Combined with Findings 1–6, a consistent pattern emerges across all
+three tools used in this assessment:
+
+| Attack style | Result across tools |
+|---|---|
+| Single-shot, direct requests (however phrased) | Consistently fails — manual baseline (0/4), PyRIT (0/8) |
+| Simple single-technique encoding (Base64 alone) | Low success — Promptfoo (3.13%), PyRIT (0/4 encoded) |
+| Adaptive, multi-step, or high-volume automated variation | Succeeds meaningfully — Promptfoo's Meta-Agent Strategic Jailbreak (43.75%), Garak's broad encoding sweep (12–22% on flagged intents) |
+
+**Conclusion:** the planted secret and related boundaries are not trivially
+exposed by direct requests or basic obfuscation. Exposure risk concentrates
+specifically in adaptive/automated attack generation at scale — a relevant
+distinction for prioritizing defenses (Phase 7) toward the techniques that
+actually demonstrated success, rather than over-indexing on simple phrasing
+defenses that are already effective.
+
+**Evidence:** results/pyrit-run-output.txt, pyrit-scripts/run_attack.py
+
+---
+
+## Updated summary table
+
+| # | Finding | Severity | Primary OWASP LLM | Tools |
+|---|---|---|---|---|
+| 1 | Excessive Agency (false action claims) | High | LLM06 | Promptfoo |
+| 2 | Sensitive info disclosure | High | LLM02 | Promptfoo |
+| 3 | System prompt disclosure | Medium | LLM07 | Promptfoo, Garak |
+| 4 | Encoding evasion bypasses named defenses | High (pattern) | LLM01 | Promptfoo, Garak |
+| 5 | Brand/business-rule violations | Medium | — (business logic) | Promptfoo |
+| 6 | Unsafe content via encoding (hate speech) | Critical | LLM01 | Promptfoo, Garak |
+| 7 | Direct/single-shot leak attempts (negative result) | Informational | LLM02 | PyRIT (cross-validates manual baseline) |
+
+## Cross-tool corroboration (methodology strength)
+Three independent tools — Promptfoo, Garak, and PyRIT — each using different
+generation and scoring approaches, converge on the same underlying pattern:
+**adaptive and high-volume automated attacks succeed where direct, single-shot
+attacks (manual or tool-assisted) largely fail.** This convergence across
+independently-built tools strengthens confidence in the finding beyond what
+any single tool's results would support alone.
