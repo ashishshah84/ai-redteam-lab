@@ -1,0 +1,18 @@
+{
+  "rest": {
+    "RestGenerator": {
+      "name": "northwind-chatbot",
+      "uri": "http://localhost:5000/chat",
+      "method": "post",
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "req_template_json_object": {
+        "message": "$INPUT"
+      },
+      "response_json": true,
+      "response_json_field": "response",
+      "request_timeout": 180
+    }
+  }
+}
