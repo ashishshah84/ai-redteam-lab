@@ -1,0 +1,55 @@
+name: Red Team Quick Scan
+
+on:
+  push:
+    paths:
+      - 'app/system_prompt.txt'
+      - 'app/main.py'
+      - 'promptfoo/promptfooconfig.yaml'
+  workflow_dispatch: {}
+
+jobs:
+  quick-scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Install app dependencies
+        run: pip install -r app/requirements.txt
+
+      - name: Start Flask app in background
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          OPENROUTER_MODEL: openrouter/free
+        run: |
+          python3 app/main.py &
+          for i in {1..15}; do
+            curl -sf http://localhost:5000/health && break
+            sleep 2
+          done
+
+      - name: Quick Promptfoo scan
+        working-directory: promptfoo
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: |
+          npx promptfoo@latest redteam run --config promptfooconfig-retest.yaml || true
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: redteam-quick-scan-results
+          path: ~/.promptfoo/
+          retention-days: 30
