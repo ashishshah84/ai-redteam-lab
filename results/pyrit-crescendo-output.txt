@@ -1,0 +1,47 @@
+No default environment files found. Using system environment variables only.
+[pyrit:alembic] No new upgrade operations detected.
+Traceback (most recent call last):
+  File "/home/radheshyam/ai-redteam-lab/pyrit-scripts/run_crescendo_attack.py", line 62, in <module>
+    asyncio.run(main())
+    ~~~~~~~~~~~^^^^^^^^
+  File "/usr/lib/python3.13/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "/usr/lib/python3.13/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/usr/lib/python3.13/asyncio/base_events.py", line 725, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "/home/radheshyam/ai-redteam-lab/pyrit-scripts/run_crescendo_attack.py", line 44, in main
+    attack = CrescendoAttack(
+        objective_target=objective_target,
+    ...<2 lines>...
+        max_turns=6,
+    )
+  File "/home/radheshyam/ai-redteam-lab/venv/lib/python3.13/site-packages/pyrit/common/apply_defaults.py", line 292, in wrapper
+    return method(*bound_args.args, **bound_args.kwargs)
+  File "/home/radheshyam/ai-redteam-lab/venv/lib/python3.13/site-packages/pyrit/executor/attack/multi_turn/crescendo.py", line 190, in __init__
+    super().__init__(objective_target=objective_target, logger=logger, context_type=CrescendoAttackContext)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/radheshyam/ai-redteam-lab/venv/lib/python3.13/site-packages/pyrit/executor/attack/multi_turn/multi_turn_attack_strategy.py", line 91, in __init__
+    super().__init__(
+    ~~~~~~~~~~~~~~~~^
+        objective_target=objective_target,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+        logger=logger,
+        ^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/radheshyam/ai-redteam-lab/venv/lib/python3.13/site-packages/pyrit/executor/attack/core/attack_strategy.py", line 442, in __init__
+    type(self).TARGET_REQUIREMENTS.validate(target=objective_target)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/radheshyam/ai-redteam-lab/venv/lib/python3.13/site-packages/pyrit/prompt_target/common/target_requirements.py", line 98, in validate
+    raise ValueError(
+    ...<2 lines>...
+    )
+ValueError: Target does not satisfy 3 required capability(ies):
+  - Target must natively support 'supports_multi_turn'; adaptation is not acceptable for this consumer.
+  - Target does not support 'supports_editable_history' and no handling policy exists for it.
+  - Target does not support 'supports_multi_turn' and the handling policy is RAISE.
