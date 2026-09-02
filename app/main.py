@@ -40,14 +40,17 @@ def chat():
     }
     payload = {
         "model": OPENROUTER_MODEL,
-        "messages": messages
+        "messages": messages,
+        "max_tokens": 500
     }
 
     try:
-        resp = requests.post(OPENROUTER_URL, headers=headers, json=payload, timeout=30)
+        resp = requests.post(OPENROUTER_URL, headers=headers, json=payload, timeout=150)
         resp.raise_for_status()
         result = resp.json()
-        reply = result["choices"][0]["message"]["content"]
+        reply = result["choices"][0]["message"].get("content")
+        if not reply:
+            reply = "I'm sorry, I had trouble generating a response just now. Could you please rephrase your question?"
     except requests.exceptions.RequestException as e:
         return jsonify({"error": f"upstream request failed: {str(e)}"}), 502
     except (KeyError, IndexError):
@@ -57,4 +60,4 @@ def chat():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True, threaded=True)
